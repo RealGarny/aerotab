@@ -17,7 +17,7 @@ export enum CB_RES {
 
 interface  TableContextProviderProps extends PropsWithChildren {
   table:TDataTable;
-  onSave?:(updatedCells: { [k: string]: TCell })=>CB_RES;
+  onSave?:(table:TDataTable)=>CB_RES;
 }
 export const TableContextProvider:FC<TableContextProviderProps> = ({table, children, onSave}) => {
   const [tableData, setTableData] = useState<TTable>(EMPTY_TABLE);
@@ -27,11 +27,11 @@ export const TableContextProvider:FC<TableContextProviderProps> = ({table, child
     setTableData(initTableData());
   }, [table]);
 
-  const createEmptyCellData = (rows:number, cols:number) => {
+  const createEmptyCellData = (cols:number, rows:number) => {
     const newCells:TCell[][] = [];
-    for(let i = 0; i < cols; i++) {
+    for(let i = 0; i < rows; i++) {
       newCells[i] = [];
-      for(let j = 0; j < rows; j++) {
+      for(let j = 0; j < cols; j++) {
         newCells[i][j] = {col: j, row: i, data:''}
       }
     }
@@ -41,13 +41,12 @@ export const TableContextProvider:FC<TableContextProviderProps> = ({table, child
   const initTableData = ():TTable => {
     const newData = structuredClone(table);
     let cells:TCell[][] = [];
-    cells = createEmptyCellData(newData.rows, newData.cols);
-    if(newData.cells && newData.cells.length) {
+    cells = createEmptyCellData(newData.cols, newData.rows);
+    if(newData.cells && newData.cells.length > 0) {
       newData.cells.map((cellData) => {
         cells[cellData.row][cellData.col] = cellData;
       })
     }
-    console.log(cells);
     return {...newData, cells};
   }
 
@@ -73,21 +72,25 @@ export const TableContextProvider:FC<TableContextProviderProps> = ({table, child
   }
 
   const pushRow = () => {
-    setTableData(prev => {
-      const newRowCount = prev.rows + 1;
-        prev.cells
-        .push(new Array(prev.cols).fill('').map((_,i) => ({row:newRowCount, col:i, data:''})))
-      return prev;
-    })
+    const newTable:TTable = structuredClone(tableData);
+    newTable.cells.push(new Array(tableData.cols)
+    .fill('')
+    .map((_,i) => ({col: i + 1, row: tableData.rows, data:''})))
+    newTable.rows++;
+    setTableData(newTable);
   }
 
   const pushCol = () => {
-
+    const newTable:TTable = structuredClone(tableData);
+    newTable.cells.map((tableRow, i) => (
+      tableRow.push({col: tableData.cols + 1, row: i, data:''})
+    ))
+    newTable.cols++;
+    setTableData(newTable);
   }
 
   const updateCell = (cell:TCell) => {
     updatedCells.current.set(`${cell.row}-${cell.col}`, cell);
-    console.log(updatedCells);
   }
 
   const clearChanges = () => {
@@ -95,11 +98,18 @@ export const TableContextProvider:FC<TableContextProviderProps> = ({table, child
   }
 
   const saveChanges = () => {
-    if(onSave && onSave(Object.fromEntries(updatedCells.current)) === CB_RES.OVERRIDE) {
-      clearChanges();
-      return;
+    if(onSave) {
+      const newTableData:TDataTable = {...structuredClone(tableData), cells:[]};
+      for(const cell of updatedCells.current.entries()) {
+        newTableData.cells.push(cell[1]);
+      }
+
+      if(onSave(newTableData) === CB_RES.OVERRIDE) {
+        clearChanges();
+        return;
+      }
     };
-    const newTableData = structuredClone(tableData);
+    const newTableData:TTable = structuredClone(tableData);
     for(const [hash, val] of updatedCells.current.entries()) {
       const [row, col] = hash.split('-');
 
