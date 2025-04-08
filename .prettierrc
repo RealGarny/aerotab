@@ -1,0 +1,11 @@
+{
+  "trailingComma": "es5",
+  "tabWidth": 2,
+  "semi": true,
+  "singleQuote": true,
+  "jsxSingleQuote": true,
+  "plugins": [
+    "./prettier-plugin-auto-join-test/index.js",
+    "prettier-plugin-organize-imports"
+  ]
+}

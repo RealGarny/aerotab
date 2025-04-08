@@ -1,0 +1,44 @@
+{
+  // Расширяем конфигурацию для Next.js, TypeScript, React и Prettier
+  "extends": [
+    "next/core-web-vitals", // Оптимизация для Core Web Vitals в Next.js
+    "plugin:@typescript-eslint/recommended", // Рекомендованные правила для TypeScript
+    "plugin:react/recommended", // Рекомендованные правила для React
+    "plugin:prettier/recommended" // Интеграция с Prettier для форматирования кода
+  ],
+  "plugins": [
+    "@typescript-eslint", // Плагин для работы с TypeScript
+    "react", // Плагин для работы с React
+    "prettier" // Плагин для Prettier
+  ],
+  "parser": "@typescript-eslint/parser", // Парсер для TypeScript
+  "parserOptions": {
+    "ecmaVersion": 2020, // Версия ECMAScript
+    "sourceType": "module", // Использование модулей ES6
+    "ecmaFeatures": {
+      "jsx": true // Поддержка JSX
+    },
+    "project": "./tsconfig.json" // Путь к tsconfig.json
+  },
+  // Правила ESLint
+  "rules": {
+    "prettier/prettier": ["error", { "endOfLine": "auto" }], // Интеграция с Prettier, автоформатирование конца строк
+    "react/react-in-jsx-scope": "off", // Отключаем необходимость импорта React в файлах с JSX
+    "react/prop-types": "off", // Отключаем проверку prop-types, так как используем TypeScript
+    "@typescript-eslint/no-unused-vars": [
+      "error",
+      {
+        "argsIgnorePattern": "^_",
+        "varsIgnorePattern": "^_",
+        "caughtErrorsIgnorePattern": "^_"
+      }
+    ], // Переменные, начинающиеся с _ игнорируются
+    "react/require-default-props": "off" // Отключаем проверку defaultProps
+  },
+  // Настройки для React
+  "settings": {
+    "react": {
+      "version": "detect" // Автоматически определяем версию React
+    }
+  }
+}
